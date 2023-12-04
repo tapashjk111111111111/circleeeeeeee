@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freehand Circle Drawing and Rating</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #canvas-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid #333;
+        }
+        #rating {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Freehand Circle Drawing and Rating</h1>
+    <p>Draw a freehand circle on the canvas. Your rating will be based on the similarity of the drawn shape to a perfect circle.</p>
+    <div id="canvas-container">
+        <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+    <div id="rating"></div>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const rating = document.getElementById("rating");
+
+        let isDrawing = false;
+        let lastX, lastY;
+        let drawingPath = [];
+
+        canvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+            lastX = e.clientX - canvas.getBoundingClientRect().left;
+            lastY = e.clientY - canvas.getBoundingClientRect().top;
+            drawingPath = [];
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isDrawing) return;
+
+            const x = e.clientX - canvas.getBoundingClientRect().left;
+            const y = e.clientY - canvas.getBoundingClientRect().top;
+
+            drawingPath.push({ x, y });
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = "#3498db";
+            ctx.lineWidth = 2;
+            ctx.lineCap = "round";
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            isDrawing = false;
+
+            const similarityToCircle = calculateSimilarityToCircle(drawingPath);
+
+            rating.textContent = `Rating: ${similarityToCircle.toFixed(2)}%`;
+        });
+
+        function calculateSimilarityToCircle(path) {
+            // Calculate the ratio of the drawn path's length to a reference circle's circumference.
+            const pathLength = calculatePathLength(path);
+            const circleCircumference = 2 * Math.PI * (canvas.width / 2);
+
+            return (pathLength / circleCircumference) * 100;
+        }
+
+        function calculatePathLength(path) {
+            let length = 0;
+
+            for (let i = 1; i < path.length; i++) {
+                const dx = path[i].x - path[i - 1].x;
+                const dy = path[i].y - path[i - 1].y;
+                length += Math.sqrt(dx * dx + dy * dy);
+            }
+
+            return length;
+        }
+    </script>
+</body>
+</html>

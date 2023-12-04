@@ -8,16 +8,32 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #3498db;
+        }
+        p {
+            font-size: 18px;
         }
         #canvas-container {
             position: relative;
-            width: 400px;
-            height: 400px;
+            width: 80%; /* Adjust the canvas container width for responsiveness */
+            max-width: 400px; /* Limit maximum width */
             margin: 20px auto;
             border: 2px solid #333;
+            background-color: #fff;
+        }
+        #canvas {
+            width: 100%;
+            height: auto; /* Maintain aspect ratio */
         }
         #rating {
             margin-top: 20px;
+            font-size: 24px;
+            color: #333;
         }
     </style>
 </head>
@@ -38,18 +54,19 @@
         let lastX, lastY;
         let drawingPath = [];
 
-        canvas.addEventListener("mousedown", (e) => {
+        canvas.addEventListener("touchstart", (e) => { // Use touch events for mobile devices
             isDrawing = true;
-            lastX = e.clientX - canvas.getBoundingClientRect().left;
-            lastY = e.clientY - canvas.getBoundingClientRect().top;
+            lastX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+            lastY = e.touches[0].clientY - canvas.getBoundingClientRect().top;
             drawingPath = [];
         });
 
-        canvas.addEventListener("mousemove", (e) => {
+        canvas.addEventListener("touchmove", (e) => { // Use touch events for mobile devices
+            e.preventDefault(); // Prevent page scrolling
             if (!isDrawing) return;
 
-            const x = e.clientX - canvas.getBoundingClientRect().left;
-            const y = e.clientY - canvas.getBoundingClientRect().top;
+            const x = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+            const y = e.touches[0].clientY - canvas.getBoundingClientRect().top;
 
             drawingPath.push({ x, y });
 
@@ -65,7 +82,7 @@
             lastY = y;
         });
 
-        canvas.addEventListener("mouseup", () => {
+        canvas.addEventListener("touchend", () => { // Use touch events for mobile devices
             isDrawing = false;
 
             const similarityToCircle = calculateSimilarityToCircle(drawingPath);
@@ -95,3 +112,4 @@
     </script>
 </body>
 </html>
+

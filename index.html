@@ -11,6 +11,11 @@
             background-color: #f0f0f0;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         h1 {
             color: #3498db;
@@ -29,11 +34,21 @@
         #canvas {
             width: 100%;
             height: auto; /* Maintain aspect ratio */
+            cursor: crosshair; /* Set cursor to crosshair for drawing */
         }
         #rating {
             margin-top: 20px;
             font-size: 24px;
             color: #333;
+        }
+        #reset-button {
+            margin-top: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -44,15 +59,56 @@
         <canvas id="canvas" width="400" height="400"></canvas>
     </div>
     <div id="rating"></div>
+    <button id="reset-button">Reset</button>
 
     <script>
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         const rating = document.getElementById("rating");
+        const resetButton = document.getElementById("reset-button");
 
         let isDrawing = false;
         let lastX, lastY;
         let drawingPath = [];
+
+        canvas.addEventListener("mousedown", (e) => { // Use mouse events for desktop
+            isDrawing = true;
+            lastX = e.clientX - canvas.getBoundingClientRect().left;
+            lastY = e.clientY - canvas.getBoundingClientRect().top;
+            drawingPath = [];
+        });
+
+        canvas.addEventListener("mousemove", (e) => { // Use mouse events for desktop
+            if (!isDrawing) return;
+
+            const x = e.clientX - canvas.getBoundingClientRect().left;
+            const y = e.clientY - canvas.getBoundingClientRect().top;
+
+            drawingPath.push({ x, y });
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = "#3498db";
+            ctx.lineWidth = 2;
+            ctx.lineCap = "round";
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+        });
+
+        canvas.addEventListener("mouseup", () => { // Use mouse events for desktop
+            isDrawing = false;
+
+            const similarityToCircle = calculateSimilarityToCircle(drawingPath);
+
+            rating.textContent = `Rating: ${similarityToCircle.toFixed(2)}%`;
+        });
+
+        canvas.addEventListener("mouseleave", () => { // Stop drawing if the mouse leaves the canvas
+            isDrawing = false;
+        });
 
         canvas.addEventListener("touchstart", (e) => { // Use touch events for mobile devices
             isDrawing = true;
@@ -90,6 +146,11 @@
             rating.textContent = `Rating: ${similarityToCircle.toFixed(2)}%`;
         });
 
+        resetButton.addEventListener("click", () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            rating.textContent = ""; // Clear the rating
+        });
+
         function calculateSimilarityToCircle(path) {
             // Calculate the ratio of the drawn path's length to a reference circle's circumference.
             const pathLength = calculatePathLength(path);
@@ -112,4 +173,3 @@
     </script>
 </body>
 </html>
-
